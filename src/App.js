@@ -1,27 +1,50 @@
-import logo from "./logo.svg";
 import "./App.css";
 import web3 from "./web3";
+import lottery from "./lottery";
+import React from "react";
 
-function App() {
-  web3.eth.getAccounts().then(console.log);
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
+class App extends React.Component {
+  state = {
+    manager: "",
+    players: [],
+    balance: "",
+    value: "",
+  };
+
+  async contractDidMount() {
+    const manager = await lottery.methods.manager().call();
+    const players = await lottery.methods.getPlayers().call();
+    const balance = await web3.eth.getBalance(lottery.options.balance);
+
+    this.setState({ manager, players, balance });
+  }
+
+  render() {
+    return (
+      <div>
+        <h2>Lottery Contract</h2>
+        <p>This contract is managed by: {this.state.manager}</p>
+        <p>There is currently {this.state.players.length} players entered.</p>
         <p>
-          Edit <code>src/App.js</code> and save to reload.
+          competing to win {web3.utils.fromWei(this.state.balance, "ether")}{" "}
+          ether!
         </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+
+        <hr />
+        <form>
+          <h4>Want to try out your luck?</h4>
+          <div>
+            <label>Amount of ether to enter</label>
+            <input
+              value={this.state.value}
+              onChange={(event) => this.setState({ value: event.target.value })}
+            />
+          </div>
+          <button>Enter</button>
+        </form>
+      </div>
+    );
+  }
 }
 
 export default App;
